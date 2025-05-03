@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>增强版轮播组件</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .carousel {
+            position: relative;
+            max-width: 1200px;
+            margin: 2rem auto;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        .slides-container {
+            display: flex;
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .slide {
+            min-width: 100%;
+            position: relative;
+            cursor: grab;
+        }
+
+        .slide:active {
+            cursor: grabbing;
+        }
+
+        .slide-image {
+            width: 100%;
+            height: 560px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .slide-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2.5rem;
+            background: linear-gradient(transparent, rgba(0,0,0,0.85));
+            color: white;
+            opacity: 0;
+            transform: translateY(100%);
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .slide:hover .slide-content {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 2.4rem;
+            margin-bottom: 1rem;
+            transform: translateY(30px);
+            opacity: 0;
+            transition: all 0.4s 0.1s;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .title-icon {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            transition: transform 0.3s;
+        }
+
+        .title-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .slide-text {
+            font-size: 1.2rem;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.4s 0.2s;
+            line-height: 1.6;
+            max-width: 80%;
+            white-space: pre-line; /* 新增换行支持 */
+        }
+
+        .slide:hover .slide-title,
+        .slide:hover .slide-text {
+            transform: translateY(0);
+            opacity: 0.95;
+        }
+
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(4px);
+            z-index: 10;
+        }
+
+        .nav-button:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .prev {
+            left: 2rem;
+        }
+
+        .next {
+            right: 2rem;
+        }
+
+        .dots-container {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            background: #fff;
+            transform: scale(1.3);
+        }
+
+        @media (max-width: 768px) {
+            .slide-image {
+                height: 400px;
+            }
+            
+            .slide-content {
+                padding: 1.5rem;
+            }
+            
+            .slide-title {
+                font-size: 1.8rem;
+                gap: 0.8rem;
+            }
+            
+            .title-icon {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .slide-text {
+                font-size: 1rem;
+                max-width: 90%;
+            }
+            
+            .nav-button {
+                width: 40px;
+                height: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="carousel">
+        <div class="slides-container"></div>
+        <button class="nav-button prev">❮</button>
+        <button class="nav-button next">❯</button>
+        <div class="dots-container"></div>
+    </div>
+
+    <script>
+        const carouselData = [
+            {
+                image: "https://api.lolimi.cn/API/dmtx/pc.php",
+                title: "高山奇景",
+                text: "探索世界之巅的壮丽景观\n最佳季节：4-10月\n推荐指数：★★★★★",
+                link: "#",
+                icon: "https://img.icons8.com/ios-filled/50/mountain.png",
+                icon_url: "#"
+            },
+            {
+                image: "https://api.lolimi.cn/API/dmtx/pc.php",
+                title: "科技创新",
+                text: "前沿科技与数字未来\n人工智能\n区块链\n物联网",
+                link: "",
+                icon: "https://img.icons8.com/ios-filled/50/technology.png"
+            },
+            {
+                image: "https://api.lolimi.cn/API/dmtx/pc.php",
+                title: "现代建筑",
+                text: "当代建筑设计之美\n设计师：张三\n建成时间：2023年",
+                link: "#",
+                icon: "https://img.icons8.com/ios-filled/50/building.png",
+                icon_url: "#"
+            },
+            {
+                image: "https://api.lolimi.cn/API/dmtx/pc.php",
+                title: "海洋奥秘",
+                text: "发现深蓝世界的秘密\n最深探测：10994米\n海洋生物：超过20万种",
+                link: "#"
+            }
+        ];
+
+        class Carousel {
+            constructor(container, data) {
+                this.container = container;
+                this.data = data;
+                this.currentIndex = 0;
+                this.init();
+                this.startAutoPlay();
+                this.addEventListeners();
+            }
+
+            init() {
+                this.slidesContainer = this.container.querySelector('.slides-container');
+                this.dotsContainer = this.container.querySelector('.dots-container');
+                
+                this.data.forEach((item, index) => {
+                    const slide = document.createElement('div');
+                    slide.className = 'slide';
+                    
+                    const content = item.link 
+                        ? `<a href="${item.link}" style="display: block; height: 100%" target="_blank">${this.createSlideContent(item)}</a>`
+                        : this.createSlideContent(item);
+                    
+                    slide.innerHTML = content;
+                    this.slidesContainer.appendChild(slide);
+
+                    const dot = document.createElement('button');
+                    dot.className = 'dot';
+                    dot.addEventListener('click', () => this.goToSlide(index));
+                    this.dotsContainer.appendChild(dot);
+                });
+
+                this.prevButton = this.container.querySelector('.prev');
+                this.nextButton = this.container.querySelector('.next');
+            }
+
+            createSlideContent(item) {
+                // 处理标题图标
+                let titleContent = item.title;
+                if (item.icon) {
+                    const iconHtml = item.icon_url 
+                        ? `<a href="${item.icon_url}" target="_blank"><img src="${item.icon}" class="title-icon"></a>`
+                        : `<img src="${item.icon}" class="title-icon">`;
+                    titleContent = `${iconHtml}<span>${item.title}</span>`;
+                }
+
+                // 处理文本换行
+                const processedText = item.text ? item.text.replace(/\n/g, '<br>') : '';
+
+                return `
+                    <img class="slide-image" src="${item.image}" alt="${item.title}" loading="lazy">
+                    <div class="slide-content">
+                        <h2 class="slide-title">${titleContent}</h2>
+                        <p class="slide-text">${processedText}</p>
+                    </div>
+                `;
+            }
+
+            update() {
+                this.slidesContainer.style.transform = `translateX(-${this.currentIndex * 100}%)`;
+                this.dotsContainer.querySelectorAll('.dot').forEach((dot, index) => {
+                    dot.classList.toggle('active', index === this.currentIndex);
+                });
+            }
+
+            goToSlide(index) {
+                this.currentIndex = (index + this.data.length) % this.data.length;
+                this.update();
+            }
+
+            nextSlide() {
+                this.goToSlide(this.currentIndex + 1);
+            }
+
+            prevSlide() {
+                this.goToSlide(this.currentIndex - 1);
+            }
+
+            startAutoPlay() {
+                this.autoPlay = setInterval(() => this.nextSlide(), 5000);
+            }
+
+            addEventListeners() {
+                this.container.addEventListener('mouseenter', () => {
+                    clearInterval(this.autoPlay);
+                });
+                
+                this.container.addEventListener('mouseleave', () => {
+                    this.startAutoPlay();
+                });
+
+                this.prevButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.prevSlide();
+                });
+
+                this.nextButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.nextSlide();
+                });
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowLeft') this.prevSlide();
+                    if (e.key === 'ArrowRight') this.nextSlide();
+                });
+            }
+        }
+
+        new Carousel(document.querySelector('.carousel'), carouselData);
+    </script>
+</body>
+</html>
